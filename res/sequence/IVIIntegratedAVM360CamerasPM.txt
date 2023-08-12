@@ -1,0 +1,34 @@
+title IVI Integreated AVM360 Cameras Power Management
+
+boundary CarService #gold
+control Avm360Service #gold
+control CameraService #gold
+boundary BSP #6495ED
+materialdesignicons F06A5 CameraPower #C70039
+
+==IVI system initialized nomally==#lightblue
+
+activate BSP #6495ED
+activate CameraPower #C70039
+activate CarService #gold
+activate Avm360Service #gold
+activate CameraService #gold
+
+group #lightblue close camera
+
+CarService->Avm360Service: speed > CLOSE_SPEED
+Avm360Service->Avm360Service: Exit foregroud if occupied
+Avm360Service->CameraService: close_cameras()
+CameraService->BSP: close(fd_camera_power)
+BSP->CameraPower: disbale
+deactivate CameraPower
+end 
+
+group #lightblue close camera
+
+CarService->Avm360Service: speed <= OPEN_SPEED
+Avm360Service->CameraService: open_cameras()
+CameraService->BSP: open(fd_camera_power)
+BSP->CameraPower: disbale
+activate CameraPower #C70039
+end 

@@ -1,0 +1,176 @@
+title Head Unit System Shutdown Process
+
+boundary #blue "Vehicle CAN Network" as vehicle
+control "MCU CAN/LIN Network" as MCU_NM #6495ED
+control "MCU Power Mangement" as MCU_PWM #6495ED
+
+control "SoC AliOS" as SoC_A #gold
+entity "FCD" as FCD #EC7063
+
+activate vehicle
+activate MCU_NM #6495ED
+activate MCU_PWM #6495ED
+activate SoC_A #gold
+activate FCD #EC7063
+activate FCD #EC7063
+
+==SystemPowerMode == RUN==#lightblue
+
+group #lightblue Enter TempRUN from RUN
+
+vehicle->MCU_NM: [CAN]SystemPowerMode = OFF
+vehicle->MCU_NM: [CAN]SystemPowerMode = OFF
+vehicle->MCU_NM: [CAN]SystemPowerMode = OFF
+MCU_NM->MCU_PWM: Event_SystemPowerOFF
+
+MCU_PWM->MCU_PWM: Start TEMP_RUM_10MIN timer
+MCU_PWM->SoC_A: [IPCL]PowerModeChanged.POWER_MODE = TEMP_RUN
+activate MCU_PWM #6495ED
+
+end
+
+alt #gold case_1: TEMP_RUM_10MIN not expired
+
+vehicle->MCU_PWM: [CAN]DoorLockStatus = AllLocked
+
+deactivate MCU_PWM
+
+MCU_PWM->MCU_NM: Start WAIT_FOR_NM_SHUTDOWN_TIMER_15S
+
+activate MCU_NM #6495ED
+
+alt #gold case_111: WAIT_FOR_NM_SHUTDOWN_TIMER_15S not expired
+
+vehicle->MCU_NM: [CAN]CAN_NM = shutdown
+
+else case_112: WAIT_FOR_NM_SHUTDOWN_TIMER_15S expired
+
+deactivate vehicle
+end
+deactivate MCU_NM
+
+MCU_NM->MCU_PWM: Start STANDBY_TIMER_15s
+activate MCU_PWM #6495ED
+
+MCU_NM->MCU_NM: Stop CAN/LIN transceiver
+MCU_NM-#red>MCU_PWM: <color:#red>Set [MCU_NM_WAKEUP_FLAG] false</color>
+deactivate MCU_NM
+
+activate MCU_NM #grey
+
+MCU_PWM->SoC_A: [IPCL]PowerModeChanged.POWER_MODE = STANDBY
+SoC_A->FCD: [IIC]Shutdown backlight
+deactivate FCD
+
+
+
+alt #gold case_121: STANDBY_TIMER_15s not expired
+
+note over vehicle, FCD #gold: To Be Completed: Be waken up during standby
+
+else case_122: STANDBY_TIMER_15s expired
+end
+
+deactivate MCU_PWM
+
+MCU_PWM->SoC_A: [IPCL]PowerOffReq
+SoC_A->MCU_PWM: [IPCL]PowerOffResp(5s)
+MCU_PWM->MCU_PWM: Start WAIT_FOR_SOC_POWER_OFF_NOW_TIMER_5s
+
+activate MCU_PWM #6495ED
+
+alt #gold case 131: PowerOffNowReq not received
+note over vehicle, FCD #gold: To Be Completed: Be waken up before entering kernel shutdown
+
+else case 132: PowerOffNowReq received
+
+
+
+SoC_A->MCU_PWM:[IPCL]PowerOffNowReq
+
+deactivate MCU_PWM
+end
+
+SoC_A->SoC_A: shutdown
+
+activate SoC_A #gold
+
+SoC_A->SoC_A: Application closing
+
+SoC_A->SoC_A: Kernel closing
+
+deactivate SoC_A
+
+MCU_PWM->MCU_PWM: Start FULLY_POWER_OFF_TIMER_20S
+
+activate MCU_PWM #6495ED
+
+note right of SoC_A #lightyellow: Kernel closed completely
+deactivate SoC_A 
+
+alt #gold case_141: Vehicle CAN network keeps sleep
+
+MCU_PWM->MCU_PWM: FULLY_POWER_OFF_TIMER_20S expired
+deactivate MCU_PWM
+MCU_PWM->MCU_NM: Turn off CAN/LIN module
+MCU_PWM->SoC_A: Pull down SoC Power Supply
+note over MCU_PWM,SoC_A #lightblue: MCU power off SoC 
+
+deactivate MCU_NM
+MCU_PWM->MCU_PWM: Enter MCU DeepStop Mode
+deactivate MCU_PWM
+
+==Head Unit has been in fully sleep state==#lightblue
+
+else case_142: Detected vehicle CAN network in NORMAL mode
+
+activate MCU_PWM #6495ED
+
+activate MCU_PWM #6495ED
+
+activate vehicle
+activate MCU_NM #gray
+
+vehicle->MCU_NM: [CAN]CAN_NM = start
+vehicle->MCU_NM: [CAN]CAN_NM = normal
+
+group #red Banma New Shutdown Process Regarding to Vehicle CAN Network Wakeup during ULLY_POWER_OFF_TIMER_20S
+MCU_NM->MCU_PWM: Set [MCU_NM_WAKEUP_FLAG] true
+
+deactivate MCU_NM 
+activate MCU_NM #6495ED
+
+vehicle->MCU_NM: [CAN]CAN_NM = normal
+
+MCU_PWM->MCU_PWM: Stop FULLY_POWER_OFF_TIMER_20S
+deactivate MCU_PWM
+
+
+
+deactivate MCU_NM
+deactivate MCU_PWM
+
+
+
+MCU_PWM->MCU_PWM: SystemInit()
+activate MCU_NM #6495ED
+activate MCU_PWM #6495ED
+
+
+
+
+note over MCU_NM,FCD #lightblue: MCU-SoC Start-up Normally
+activate SoC_A #gold
+vehicle->MCU_NM: [CAN]CAN_NM = normal
+vehicle->MCU_NM: [CAN]CAN_NM = normal
+deactivate MCU_PWM
+deactivate vehicle
+deactivate SoC_A
+
+end # Banma New Shutdown Process
+
+end 
+
+else case_2: TEMP_RUM_10MIN expired
+==To Be Completed==#lightblue
+end 
