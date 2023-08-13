@@ -22,7 +22,7 @@ class Logger:
         self.__ch.setLevel(logging_level)
         
         self.__formatter = logging.Formatter(
-            f'%(asctime)s - %(name)s - %(funcname) - %(levelname)s - %(message)s')
+            f'%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s')
         self.__ch.setFormatter(self.__formatter)
         self.__logger.addHandler(self.__ch)
         
@@ -72,6 +72,8 @@ class OutputWidgetHandler(logging.Handler):
         """ Clear the current logs """
         self.out.clear_output()
         
+
+logging_handler = OutputWidgetHandler()
         
 if __name__ == "__main__":
     print(logging.DEBUG in logging._levelToName)
