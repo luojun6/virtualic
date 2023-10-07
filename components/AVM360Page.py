@@ -39,6 +39,10 @@ class AVM360SettingPage(widgets.VBox):
         super().__init__(children=[self.__title,
                                    self.__closespeed_setting,
                                    self.__exit_button], **kwargs)
+    @property
+    def exit_setting_button(self):
+        return self.__exit_button
+    
 
 
 class AVM360Page(widgets.VBox):
@@ -61,6 +65,7 @@ class AVM360Page(widgets.VBox):
             children=[self.__buttons_box, self.__main_output], **kwargs)
 
         self.__setting_button.on_click(self.__on_click_setting_button)
+        self.__avm360_setting_page.exit_setting_button.on_click(self.__on_click_exit_setting_button)
 
     @property
     def home_button(self):
@@ -69,6 +74,11 @@ class AVM360Page(widgets.VBox):
     @property
     def setting_button(self):
         return self.__setting_button
+    
+    def __on_click_exit_setting_button(self, button):
+        self.__main_output.clear_output()
+        with self.__main_output:
+            display(self.__main_page)
 
     def __on_click_setting_button(self, button):
         if self.__setting_event.is_set():

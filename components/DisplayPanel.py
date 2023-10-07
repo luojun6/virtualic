@@ -2,7 +2,6 @@ import ipywidgets as widgets
 # from IPython.core.display import display
 
 from css import css
-from utils.loggers import Logger, OutputWidgetHandler
 from components.DockButtons import DockButtons
 from utils.loggers import Logger, logging_handler
 import logging
@@ -33,22 +32,33 @@ class DisplayPanel(widgets.HBox):
 
         self.__forground = widgets.Output(
             layout=widgets.Layout(
-                # width="auto",
+                # width="90%",
                 # height="auto",
                 justify_content="space-around",
                 align_items="center"
             )
         )
 
-        self.__dock = widgets.Output()
+        self.__dock = widgets.Output(
+            layout=widgets.Layout(
+                width="58px"
+            )
+        )
+        
 
         super(DisplayPanel, self).__init__(
-            children=[self.__dock, self.__forground], **kwargs)
+            # children=[self.__dock, self.__forground], 
+            children=[self.__forground], 
+            **kwargs)
 
     def power_off(self):
         self.__forground.clear_output()
         self.__dock.clear_output()
         self.background = css.BACKGROUND_scree_off
+        self.children = [self.__forground]
+        
+    def power_on(self):
+        self.children = [self.__dock, self.__forground]
 
     @property
     def dock(self):

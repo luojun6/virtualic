@@ -15,6 +15,8 @@ class DockButtons(widgets.VBox):
 
         self.__home_button = DockButton(icon="home")
         self.__music_button = DockButton(icon="music")
+        self.__radio_button = DockButton(icon="")
+        self.__radio_button.description = "𝗥"
         self.__setting_button = DockButton(icon="gear")
         self.__car_button = DockButton(icon="car")
         self.__avm360_button = DockButton(icon="camera")
@@ -26,6 +28,7 @@ class DockButtons(widgets.VBox):
             children=[
                 self.__home_button,
                 self.__music_button,
+                self.__radio_button,
                 self.__setting_button,
                 self.__car_button,
                 self.__avm360_button,
@@ -60,3 +63,5 @@ class DockButtons(widgets.VBox):
     @property
     def dock_buttons(self):
         return self.__dock_buttons
+
+dock_buttons = DockButtons()

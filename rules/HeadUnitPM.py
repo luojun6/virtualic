@@ -54,6 +54,7 @@ class PowerStateOFF(PowerState):
     def execute(self):
         super().execute()
         self.context.display.power_off()
+        self.context.display.layout.justify_content = "center"
 
 
 class PowerStateStartUp(PowerState):
@@ -113,6 +114,7 @@ class PowerStatePowerUp(PowerState):
 
     @debounce(state_duration)
     def transition_to_running(self):
+        self.context.display.power_on()
         self.transition_to(self.__running_state)
         # self.context.display.forground.clear_output()
 
@@ -121,11 +123,9 @@ class PowerStateRunning(PowerState):
 
     def execute(self) -> None:
         super().execute()
-
-        # self.context.display.layout.justify_content = "flex-start"
-        self.context.display.layout.justify_content = "space-between"
-
-        # dock_buttons = DockButtons()
+        
+        self.context.display.layout.justify_content = "flex-start"
+        
         with self.context.display.dock:
             display(self.context.display.dock_buttons)
 
