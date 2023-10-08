@@ -11,7 +11,7 @@ class _UISignal(widgets.VBox):
         checkbox_description="disable",
         **kwargs,
     ):
-        self.__label = widgets.HTML(f"<h4 style='font-weight:bold'>{signal_name}</h4>")
+        self.__label = widgets.HTML(f"<h5 style='font-weight:bold'>{signal_name}</h5>")
         self.__checkbox = widgets.Checkbox(
             value=disabled,
             description=checkbox_description,
@@ -41,7 +41,7 @@ class _UISignal(widgets.VBox):
 
     def set_on_change_callback(self, callback):
         self.__value_widget.observe(callback, "value")
-
+    
     @property
     def label(self):
         return self.__label

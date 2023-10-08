@@ -27,14 +27,21 @@ class EnhancedUISignalEnum(UISignalEnum):
         initial_value=0,
         select_widget_type=widgets.Dropdown,
         disabled=False,
+        checkbox_description_plus_V=False
     ):
         self.__signal = signal
+        
+        if checkbox_description_plus_V:
+            checkbox_description = self.__signal.__name__ + "V"
+        else:
+            checkbox_description = "disable"
 
         super().__init__(
             signal_name=self.__signal.__name__.replace("EnumSignal", ""),
             initial_value=initial_value,
             select_widget_type=select_widget_type,
             disabled=disabled,
+            checkbox_description=checkbox_description,
             tuples_option=self.__signal.get_option_tuples(),
         )
 

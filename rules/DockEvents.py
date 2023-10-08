@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from IPython.core.display import display
-from components.AVM360Page import AVM360Page
 import components.ForgroundPages as pages
 from components.DisplayPanel import DisplayPanel
+from rules.AVM360Service import AVM360Context
 
 from utils.loggers import Logger, logging_handler
 import logging
@@ -21,25 +21,25 @@ class _DockStrategy(ABC):
 
 class DockContext:
 
-    def __init__(self, display: DisplayPanel, strategy: _DockStrategy, avm360page: AVM360Page):
+    def __init__(self, display: DisplayPanel, strategy: _DockStrategy, avm360context: AVM360Context):
         self.__display = display
         self.__strategy = strategy
-        self.__avm360page = avm360page
+        self.__avm360context = avm360context
 
         self.__display.dock_buttons.home_button.on_click(
             self.__on_click_home_button)
         self.__display.dock_buttons.avm360_button.on_click(
             self.__on_click_avm360_button)
 
-        self.__avm360page.home_button.on_click(self.__on_click_home_button)
+        self.__avm360context.avm360page.home_button.on_click(self.__on_click_home_button)
 
     @property
     def display(self) -> DisplayPanel:
         return self.__display
 
     @property
-    def avm360page(self):
-        return self.__avm360page
+    def avm360context(self):
+        return self.__avm360context
 
     @property
     def strategy(self) -> _DockStrategy:
@@ -73,10 +73,18 @@ class DockStrategyHomeButton(_DockStrategy):
 
         with context.display.dock:
             display(context.display.dock_buttons)
+            
+        context.avm360context.dock_entered = False
+        context.avm360context.on_avm360page = False
 
 
 class DockStrategyAVM360button(_DockStrategy):
 
     def process_button_pressed_event(self, context):
         with context.display.forground:
-            display(context.avm360page)
+            display(context.avm360context.avm360page)
+            
+        context.avm360context.dock_entered = True
+        context.avm360context.on_avm360page = True
+            
+        

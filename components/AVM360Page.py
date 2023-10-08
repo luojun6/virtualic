@@ -4,7 +4,7 @@ import components.ForgroundPages as pages
 from IPython.core.display import display
 
 
-class AVM360Button(widgets.Button):
+class _AVM360Button(widgets.Button):
     def __init__(self, icon: str, button_style="danger", **kwargs):
         super().__init__(**kwargs)
         self.icon = icon
@@ -12,7 +12,7 @@ class AVM360Button(widgets.Button):
         self.layout = widgets.Layout(width="auto")
 
 
-class AVM360SettingPage(widgets.VBox):
+class _AVM360SettingPage(widgets.VBox):
     CLOSESPEED_15KM = "15km"
     CLOSESPEED_25KM = "25km"
     CLOSESPEED_35KM = "35km"
@@ -50,15 +50,15 @@ class AVM360Page(widgets.VBox):
     def __init__(self, **kwargs):
         self.__main_output = widgets.Output()
         self.__main_page = pages.AVM360_PAGE_0
-        self.__home_button = AVM360Button(icon="home")
-        self.__setting_button = AVM360Button(icon="gear")
+        self.__home_button = _AVM360Button(icon="home")
+        self.__setting_button = _AVM360Button(icon="gear")
         self.__buttons_box = widgets.HBox(
             [self.__home_button, self.__setting_button])
 
         with self.__main_output:
             display(self.__main_page)
 
-        self.__avm360_setting_page = AVM360SettingPage()
+        self.__avm360_setting_page = _AVM360SettingPage()
         self.__setting_event = threading.Event()
 
         super().__init__(
@@ -66,6 +66,15 @@ class AVM360Page(widgets.VBox):
 
         self.__setting_button.on_click(self.__on_click_setting_button)
         self.__avm360_setting_page.exit_setting_button.on_click(self.__on_click_exit_setting_button)
+        
+        
+    @property
+    def dock_entered(self):
+        return self.__dock_entered
+    
+    @dock_entered.setter
+    def dock_entered(self, value: bool):
+        self.__dock_entered = value
 
     @property
     def home_button(self):
@@ -91,4 +100,7 @@ class AVM360Page(widgets.VBox):
             self.__setting_event.set()
             self.__main_output.clear_output()
             with self.__main_output:
-                display(self.__avm360_setting_page)
+                display(self.__avm360_setting_page)    
+                
+                
+avm360page = AVM360Page()

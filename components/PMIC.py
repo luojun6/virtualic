@@ -17,8 +17,8 @@ class PowerControlBox(widgets.HBox):
     
     POWER_STATUS_STYLE_MAP = {
         POWER_OFF_STATUS: "",
-        POWER_ON_STATUS: "danger",
-        POWER_RUNNING_STATUS: "warning"
+        POWER_ON_STATUS: "warning",
+        POWER_RUNNING_STATUS: "primary"
     }
     
     def __init__(self, 
