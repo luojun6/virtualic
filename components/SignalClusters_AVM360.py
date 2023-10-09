@@ -11,7 +11,9 @@ class SignalClusterAVM360(SignalCluster):
                  turn_light_sw_class=signals.DircnIndLampSwSts,
                  left_turnning_light_sts_class=signals.LDircnIO,
                  right_turnning_light_sts_class=signals.RDircnIO,
-                 steering_wheel_angle_class=signals.StrgWhlAng
+                 steering_wheel_angle_class=signals.StrgWhlAng,
+                 vehicle_speed_class=signals.VehSpdAvgDrvn,
+                 vehicle_driver_mode_class=signals.VehDrvngMd
                  ):
         
         self.__gear_sts=EnhancedUISignalEnum(gear_sts_class, checkbox_description_plus_V=True)
@@ -19,13 +21,19 @@ class SignalClusterAVM360(SignalCluster):
         self.__left_turnning_light_sts=EnhancedUISignalEnum(left_turnning_light_sts_class)
         self.__right_turnning_light_sts=EnhancedUISignalEnum(right_turnning_light_sts_class)
         self.__steering_wheel_angle=steering_wheel_angle_class()
+        self.__vehicle_speed = vehicle_speed_class()
+        self.__vehicle_driver_mode = EnhancedUISignalEnum(vehicle_driver_mode_class)
         
         first_row = widgets.HBox(
-            [self.__gear_sts, self.__turn_light_sw],
+            [self.__gear_sts, self.__vehicle_speed],
             layout=self.SUB_BOX_LAYOUT
         )
-        
+
         second_row = widgets.HBox(
+            [self.__turn_light_sw, self.__vehicle_driver_mode]
+        )
+        
+        third_row = widgets.HBox(
             [self.__left_turnning_light_sts, self.__right_turnning_light_sts],
             layout=self.SUB_BOX_LAYOUT
         )
@@ -33,7 +41,7 @@ class SignalClusterAVM360(SignalCluster):
         super().__init__(
             title="AVM360 Signals Cluster", 
             signal_box=widgets.VBox([
-                first_row, second_row
+                first_row, third_row
             ]))
         
     @property
@@ -55,6 +63,14 @@ class SignalClusterAVM360(SignalCluster):
     @property
     def steering_wheel_angle(self):
         return self.__steering_wheel_angle
+
+    @property
+    def vehicle_driver_mode(self):
+        return self.__vehicle_driver_mode
+    
+    @property
+    def vehicle_speed(self):
+        return self.__vehicle_speed 
 
 
 

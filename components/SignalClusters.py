@@ -45,8 +45,8 @@ class SignalClusterPM(SignalCluster):
     def __init__(self,
                  vehicle_power_mode_class=signals.SysPwrMd,
                  vehicle_door_lock_sts_class=signals.VehLckngSts,
-                 vehicle_speed_class=signals.VehSpdAvgDrvn,
-                 vehicle_driver_mode_class=signals.VehDrvngMd
+                #  vehicle_speed_class=signals.VehSpdAvgDrvn,
+                #  vehicle_driver_mode_class=signals.VehDrvngMd
                  ):
         self.__restart_button = widgets.Button(
             description="RESTART", layout=widgets.Layout(width="auto", justify_content="flex-start"), button_style="danger")
@@ -54,31 +54,31 @@ class SignalClusterPM(SignalCluster):
             vehicle_power_mode_class)
         self.__vehicle_door_lock_sts = EnhancedUISignalEnum(
             vehicle_door_lock_sts_class)
-        self.__vehicle_speed = vehicle_speed_class()
-        self.__vehicle_driver_mode = EnhancedUISignalEnum(vehicle_driver_mode_class)
+        # self.__vehicle_speed = vehicle_speed_class()
+        # self.__vehicle_driver_mode = EnhancedUISignalEnum(vehicle_driver_mode_class)
 
         first_row = widgets.HBox(
             [self.__restart_button, self.__vehicle_power_mode, self.__vehicle_door_lock_sts], 
             layout=self.SUB_BOX_LAYOUT)
 
-        second_row = widgets.HBox(
-            [self.__vehicle_speed, self.__vehicle_driver_mode],
-            layout=self.SUB_BOX_LAYOUT
-)
+        # second_row = widgets.HBox(
+        #     [self.__vehicle_speed, self.__vehicle_driver_mode],
+        #     layout=self.SUB_BOX_LAYOUT
+        # )
         
         super().__init__(
             title="Vehicle Powermanagement Signals Cluster",
             signal_box=widgets.VBox([
-                first_row, second_row
+                first_row
             ]))
 
-    @property
-    def vehicle_driver_mode(self):
-        return self.__vehicle_driver_mode
+    # @property
+    # def vehicle_driver_mode(self):
+    #     return self.__vehicle_driver_mode
     
-    @property
-    def vehicle_speed(self):
-        return self.__vehicle_speed 
+    # @property
+    # def vehicle_speed(self):
+    #     return self.__vehicle_speed 
     
     @property
     def restart_button(self):

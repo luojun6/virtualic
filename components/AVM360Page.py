@@ -67,14 +67,6 @@ class AVM360Page(widgets.VBox):
         self.__setting_button.on_click(self.__on_click_setting_button)
         self.__avm360_setting_page.exit_setting_button.on_click(self.__on_click_exit_setting_button)
         
-        
-    @property
-    def dock_entered(self):
-        return self.__dock_entered
-    
-    @dock_entered.setter
-    def dock_entered(self, value: bool):
-        self.__dock_entered = value
 
     @property
     def home_button(self):

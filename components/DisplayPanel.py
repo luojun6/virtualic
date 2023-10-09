@@ -83,3 +83,7 @@ class DisplayPanel(widgets.HBox):
         self.remove_class(self.__background)
         self.__background = setting
         self.add_class(self.__background)
+        
+    def clear_all_output(self):
+        self.__forground.clear_output()
+        self.__dock.clear_output()
