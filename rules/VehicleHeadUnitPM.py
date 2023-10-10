@@ -1,5 +1,5 @@
 from threading import Event
-
+from abc import ABC
 from components.SignalClusters import SignalClusterPM
 from common.AbstractCommand import Command
 from rules.HeadUnitPM import PowerManagementDisplay as HeadUnitPM
@@ -25,7 +25,10 @@ class VehiclePowerOffCommand(Command):
         self.receiver.power_off()
 
 
-class VehicleHeadUnitPM_SAIC():
+class VehicleHeadUnitPM(ABC):
+    pass
+
+class VehicleHeadUnitPM_SAIC(VehicleHeadUnitPM):
 
     def __init__(self, hu_pm: HeadUnitPM, sc_pm: SignalClusterPM):
         self.__hu_pm = hu_pm
