@@ -1,6 +1,6 @@
 import ipywidgets as widgets
 import threading
-import components.ForgroundPages as pages
+import components.ForegroundPages as pages
 from IPython.core.display import display
 
 
@@ -76,8 +76,12 @@ class AVM360Page(widgets.VBox):
     def setting_button(self):
         return self.__setting_button
     
+    def clear_setting(self):
+        self.__setting_event.clear()
+    
     def __on_click_exit_setting_button(self, button):
         self.__main_output.clear_output()
+        self.__setting_event.clear()
         with self.__main_output:
             display(self.__main_page)
 
@@ -95,4 +99,4 @@ class AVM360Page(widgets.VBox):
                 display(self.__avm360_setting_page)    
                 
                 
-avm360page = AVM360Page()
+# avm360page = AVM360Page()

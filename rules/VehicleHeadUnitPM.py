@@ -47,6 +47,9 @@ class VehicleHeadUnitPM_SAIC(VehicleHeadUnitPM):
         self.__sc_pm.vehicle_door_lock_sts.set_on_change_callback(
             self.__on_change_vehicle_door_lock_sts
         )
+        
+        self.__veh_power_on_callback = None
+        self.__veh_power_off_callback = None
 
     @property
     def headunit_pm(self):
@@ -75,10 +78,14 @@ class VehicleHeadUnitPM_SAIC(VehicleHeadUnitPM):
             else:
                 _logger.error(
                     f"Do not execute {self.__key_on_cmd.__class__.__name__} while power_off_event is {self.__power_off_event.is_set()}.")
+                
+            if self.__veh_power_on_callback:
+                self.__veh_power_on_callback()
 
         elif new_value == signal.OFF.value:
             # self.__key_off_cmd.execute()
             self.__key_off_event.set()
+            
 
     def __on_change_vehicle_door_lock_sts(self, change):
         new_value = change["new"]
@@ -91,3 +98,13 @@ class VehicleHeadUnitPM_SAIC(VehicleHeadUnitPM):
             if self.__key_off_event.is_set():
                 self.__power_off_cmd.execute()
                 self.__power_off_event.set()
+                if self.__veh_power_off_callback:
+                    self.__veh_power_off_callback()
+                
+                
+    def set_veh_power_on_callback(self, callback):
+        self.__veh_power_on_callback = callback
+        
+    def set_veh_power_off_callback(self, callback):
+        self.__veh_power_off_callback = callback
+                

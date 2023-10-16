@@ -30,7 +30,7 @@ class DisplayPanel(widgets.HBox):
         self.__background = css.BACKGROUND_scree_off
         self.add_class(self.__background)
 
-        self.__forground = widgets.Output(
+        self.__foreground = widgets.Output(
             layout=widgets.Layout(
                 # width="90%",
                 # height="auto",
@@ -47,18 +47,18 @@ class DisplayPanel(widgets.HBox):
         
 
         super(DisplayPanel, self).__init__(
-            # children=[self.__dock, self.__forground], 
-            children=[self.__forground], 
+            # children=[self.__dock, self.__foreground], 
+            children=[self.__foreground], 
             **kwargs)
 
     def power_off(self):
-        self.__forground.clear_output()
+        self.__foreground.clear_output()
         self.__dock.clear_output()
         self.background = css.BACKGROUND_scree_off
-        self.children = [self.__forground]
+        self.children = [self.__foreground]
         
     def power_on(self):
-        self.children = [self.__dock, self.__forground]
+        self.children = [self.__dock, self.__foreground]
 
     @property
     def dock(self):
@@ -69,8 +69,8 @@ class DisplayPanel(widgets.HBox):
         return self.__dock_buttons
 
     @property
-    def forground(self):
-        return self.__forground
+    def foreground(self):
+        return self.__foreground
 
     @property
     def background(self):
@@ -85,5 +85,5 @@ class DisplayPanel(widgets.HBox):
         self.add_class(self.__background)
         
     def clear_all_output(self):
-        self.__forground.clear_output()
+        self.__foreground.clear_output()
         self.__dock.clear_output()

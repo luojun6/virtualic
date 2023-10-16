@@ -53,6 +53,10 @@ class TrShftLvrPos(EnumSignal):
     ForwardRangeH = 11
     LeverPositionUnknown = 15
     
+    @classmethod
+    def _missing_(cls, value):
+        return cls.ParkRange
+    
 class DircnIndLampSwSts(EnumSignal):
     off = 0
     Left_On = 1

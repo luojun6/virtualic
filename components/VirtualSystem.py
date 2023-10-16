@@ -16,3 +16,7 @@ class VituralSystemContext(threading.Thread):
     @system.setter
     def system(self, deployed_system):
         self.__system = deployed_system
+        self.register_callbacks()
+        
+    def register_callbacks(self):
+        pass

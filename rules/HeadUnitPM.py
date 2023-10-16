@@ -1,4 +1,4 @@
-import components.ForgroundPages as pages
+import components.ForegroundPages as pages
 import ipywidgets as widgets
 
 from IPython.core.display import display
@@ -70,7 +70,7 @@ class PowerStateStartUp(PowerState):
         html.add_class(css.FONT_color_night)
         # html.value = "<h3 style='font-weight:bold'>Dislaying start-up animation....</h3>"
 
-        with self.context.display.forground:
+        with self.context.display.foreground:
             display(html)
 
         self.transition_to_power_up()
@@ -78,7 +78,7 @@ class PowerStateStartUp(PowerState):
     @debounce(state_duration)
     def transition_to_power_up(self):
         self.transition_to(self.__power_up_state)
-        # self.context.display.forground.clear_output()
+        # self.context.display.foreground.clear_output()
 
 
 class PowerStatePowerUp(PowerState):
@@ -93,7 +93,7 @@ class PowerStatePowerUp(PowerState):
         html = widgets.HTML(
             "<h3 style='font-weight:bold'>Dislaying power-up animation....</h3>")
 
-        with self.context.display.forground:
+        with self.context.display.foreground:
             display(html)
 
         theme_value = css.BACKGROUND_theme_night
@@ -116,7 +116,7 @@ class PowerStatePowerUp(PowerState):
     def transition_to_running(self):
         self.context.display.power_on()
         self.transition_to(self.__running_state)
-        # self.context.display.forground.clear_output()
+        # self.context.display.foreground.clear_output()
 
 
 class PowerStateRunning(PowerState):
@@ -129,7 +129,7 @@ class PowerStateRunning(PowerState):
         with self.context.display.dock:
             display(self.context.display.dock_buttons)
 
-        with self.context.display.forground:
+        with self.context.display.foreground:
             display(pages.HOME_PAGE_0)
 
 
