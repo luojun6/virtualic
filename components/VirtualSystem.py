@@ -8,6 +8,7 @@ class VirtualSystem(threading.Thread):
 class VituralSystemContext(threading.Thread):
     def __init__(self):
         super(VituralSystemContext, self).__init__()
+        self.__enabled = threading.Event()
         
     @property
     def system(self):
@@ -20,3 +21,13 @@ class VituralSystemContext(threading.Thread):
         
     def register_callbacks(self):
         pass
+    
+    def enable_context(self):
+        self.__enabled.set()
+        
+    def disable_context(self):
+        self.__enabled.clear()
+        
+    @property
+    def context_enabled(self):
+        return self.__enabled.is_set()

@@ -63,5 +63,3 @@ class DockButtons(widgets.VBox):
     @property
     def dock_buttons(self):
         return self.__dock_buttons
-
-dock_buttons = DockButtons()

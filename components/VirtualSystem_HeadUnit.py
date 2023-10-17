@@ -29,11 +29,11 @@ class VirtualSystem_HeadUnit(VirtualSystem):
         
         self.__display = display
         self.__veh_hu_pm = veh_hu_pm
-        self.__dock_context = None
-        self.__avm360context = None
+        self.__dock_context = DockContext()
+        self.__avm360context = AVM360Context()
         
         self.__conext_list = list()
-        # self.__start_context()
+        self.__start_context()
         
         self.__veh_hu_pm.set_veh_power_on_callback(self.__veh_power_on_callback)
         self.__veh_hu_pm.set_veh_power_off_callback(self.__veh_power_off_callback)
@@ -41,7 +41,7 @@ class VirtualSystem_HeadUnit(VirtualSystem):
     
     def __veh_power_on_callback(self):
         _logger.debug("Executing __veh_power_on_callback().")
-        self.__start_context()
+        # self.__start_context()
         
         for context in self.__conext_list:
             
@@ -54,8 +54,6 @@ class VirtualSystem_HeadUnit(VirtualSystem):
         
         
     def __start_context(self):
-        self.__dock_context = DockContext()
-        self.__avm360context = AVM360Context()
         
         self.__conext_list.append(self.__dock_context)
         self.__conext_list.append(self.__avm360context)
