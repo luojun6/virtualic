@@ -22,7 +22,10 @@ class _UserDB(metaclass=SingletonMeta):
             json.dump(self.__user_setting, userdb)
 
     def get_user_setting(self, key):
-        return self.__user_setting[key]
+        try:
+            return self.__user_setting[key]
+        except KeyError:
+            return None
     
 
 user_db = _UserDB()
