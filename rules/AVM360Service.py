@@ -56,6 +56,7 @@ class AVM360Context(VituralSystemContext):
         self.exit_avm360page()
         
     def exit_avm360page(self):
+        self.avm360page.exit_setting_page()
         self.system.dock_context.enter_home_page()
         self.__dock_entered.clear()
         self.avm360page.clear_setting()

@@ -107,12 +107,15 @@ class AVM360Page(widgets.VBox):
     
     def clear_setting(self):
         self.__setting_event.clear()
-    
-    def __on_click_exit_setting_button(self, button):
+        
+    def exit_setting_page(self):
         self.__main_output.clear_output()
         self.__setting_event.clear()
         with self.__main_output:
             display(self.__main_page)
+        
+    def __on_click_exit_setting_button(self, button):
+        self.exit_setting_page()
 
     def __on_click_setting_button(self, button):
         if self.__setting_event.is_set():

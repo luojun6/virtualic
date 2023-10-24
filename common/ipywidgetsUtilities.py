@@ -8,12 +8,8 @@ _logger = Logger(logger_name=__file__,
 
 def get_output_model_id(output_object: widgets.Output):
     try:
-        model_id = output_object.outputs[0]["data"]["application/vnd.jupyter.widget-view+json"]["model_id"]
+        return output_object.outputs[0]["data"]["application/vnd.jupyter.widget-view+json"]["model_id"]
         
     except Exception as e:
         _logger.error(f"Failed to get model_id from {output_object.outputs}.")
         _logger.error(e)
-        
-    finally:
-        return model_id if model_id else None
-    
