@@ -30,7 +30,8 @@ class SignalClusterAVM360(SignalCluster):
         )
 
         second_row = widgets.HBox(
-            [self.__turn_light_sw, self.__vehicle_driver_mode]
+            [self.__turn_light_sw, self.__vehicle_driver_mode],
+            layout=self.SUB_BOX_LAYOUT
         )
         
         third_row = widgets.HBox(
@@ -41,7 +42,7 @@ class SignalClusterAVM360(SignalCluster):
         super().__init__(
             title="AVM360 Signals Cluster", 
             signal_box=widgets.VBox([
-                first_row, third_row
+                first_row, second_row, third_row
             ]))
         
     @property

@@ -6,6 +6,7 @@ from components.VirtualSystem import VituralSystemContext
 from components.SignalClusters_AVM360 import SignalClusterAVM360
 from components.PMIC_AVM360 import PowerControlBox_AVM360
 from rules.AbstractStrategies import AbstractOnChangeStrategy, AbstractStrategy
+import rules.FakedBCM as BCM
 
 from utils.loggers import Logger, logging_handler
 import logging
@@ -25,6 +26,7 @@ class AVM360Context(VituralSystemContext):
         self.__signal_cluster = SignalClusterAVM360()
         self.__pmic = PowerControlBox_AVM360()
         self.__dock_entered = threading.Event()
+        self.__turn_light_entered = threading.Event()
         
         super().__init__()
         
@@ -33,10 +35,13 @@ class AVM360Context(VituralSystemContext):
         
     # Step 1: Configure Concrete Strategy 
     def __init_strategies(self):
+        self.on_speed_for_enable()
         self.__on_change_gear_sts_strategy = OnChangeGearStatus()
         self.__on_change_speed_strategy = OnChangeSpeed()
-        
         self.__dock_enter_strategy = DockEnterStrategy()
+        self.__on_change_turn_light_switch_strategy = OnChangeTurnLightSwitch()
+        self.__on_change_left_turn_light_status_strategy = OnChnageLeftTurnLightStatus()
+        self.__on_change_right_turn_light_status_strategy = OnChnageRightTurnLightStatus()
     
     # Step 2: Define callback function    
     def __on_change_gear_sts(self, change):
@@ -45,12 +50,33 @@ class AVM360Context(VituralSystemContext):
     def __on_change_speed(self, change):
         self.__on_change_speed_strategy.execute(context=self, change=change)
         
+    def __on_change_turn_light_switch(self, change):
+        self.__on_change_turn_light_switch_strategy.execute(context=self, change=change)
+        
+    def __on_change_left_turn_light_status(self, change):
+        self.__on_change_left_turn_light_status_strategy.execute(context=self, change=change)
+        
+    def __on_change_right_turn_light_status(self, change):
+        self.__on_change_right_turn_light_status_strategy.execute(context=self, change=change)
+        
     # Step 3: Register callback functions
     # Executed in parent constructor
     def register_callbacks(self):
         self.__avm360page.home_button.on_click(self.__exit_avm360page_button_callback)
         self.__signal_cluster.gear_sts.set_on_change_callback(self.__on_change_gear_sts)
         self.__signal_cluster.vehicle_speed.set_on_change_callback(self.__on_change_speed)
+        self.__signal_cluster.turn_light_sw.set_on_change_callback(self.__on_change_turn_light_switch)
+        self.__signal_cluster.left_turnning_light_sts.set_on_change_callback(self.__on_change_left_turn_light_status)
+        self.__signal_cluster.right_turnning_light_sts.set_on_change_callback(self.__on_change_right_turn_light_status)
+        
+    def on_speed_for_enable(self):
+        current_speed = self.get_vehicle_speed()
+        closed_speed_setting = self.get_closespeed_setting_value()
+        if current_speed < closed_speed_setting:
+            self.enable()
+        else:
+            self.disable()
+            
         
     def __exit_avm360page_button_callback(self, button):
         self.exit_avm360page()
@@ -58,16 +84,19 @@ class AVM360Context(VituralSystemContext):
     def exit_avm360page(self):
         self.avm360page.exit_setting_page()
         self.system.dock_context.enter_home_page()
+        self.__turn_light_entered.clear()
         self.__dock_entered.clear()
         self.avm360page.clear_setting()
         
     def power_on(self):
         self.__pmic.power_on()
-        self.enable_context()
+        self.enable()
         
     def power_off(self):
         self.__pmic.power_off()
-        self.disable_context()    
+        self.disable()    
+        
+    
     
     @property
     def pmic(self):
@@ -84,11 +113,13 @@ class AVM360Context(VituralSystemContext):
     def dock_enter(self):
         self.__dock_enter_strategy.execute(context=self)
         
-    def set_dock_entered_event(self):
-        self.__dock_entered.set()
-        
-    def clear_dock_entered_event(self):
-        self.__dock_entered.clear()
+    @property
+    def dock_entered_event(self):
+        return self.__dock_entered
+    
+    @property
+    def turn_light_entered_event(self):
+        return self.__turn_light_entered
         
     def is_avm360page(self):
         return get_output_model_id(self.system.display.foreground) == self.__avm360page.model_id
@@ -108,54 +139,101 @@ class AVM360Context(VituralSystemContext):
 
     def get_vehicle_speed(self):
         return int(self.signal_cluster.vehicle_speed.value)
-        
-
-class DockEnterStrategy(AbstractStrategy):
     
-    def execute(self, context):
-        closespeed_setting = context.get_closespeed_setting_value()
-        veh_speed = context.get_vehicle_speed()
-        _logger.debug(f"Current vehicle speed: {veh_speed}km/h.")
-        _logger.debug(f"User setting close speed: {closespeed_setting}km/h.")
-        
-        if veh_speed <= closespeed_setting:
-            context.system.display.clear_all_output() 
-            context.set_dock_entered_event()
-            context.enter_avm360page()
-            
-        else:
-            _logger.warn("Current vehicle speed is not allowed to enter avm360page.")
-            
-            
-
-class OnChangeSpeed(AbstractOnChangeStrategy):
+    
+class OnChnageRightTurnLightStatus(AbstractOnChangeStrategy):
     
     def execute(self, context, change):
-        if not context.context_enabled:
+        if not context.is_enabled:
             return
         
-        new_value = int(change["new"])
-        closespeed_setting = context.get_closespeed_setting_value()
+        new_value = change["new"]
+        signal = context.signal_cluster.right_turnning_light_sts.signal
         
-        if context.is_avm360page():
-            if new_value > closespeed_setting:
+        if new_value == signal.OFF.value:
+            if context.is_avm360page():
                 context.exit_avm360page()
+                context.turn_light_entered_event.clear()
+    
+    
+class OnChnageLeftTurnLightStatus(AbstractOnChangeStrategy):
+    
+    def execute(self, context, change):
+        if not context.is_enabled:
+            return
+        
+        new_value = change["new"]
+        signal = context.signal_cluster.left_turnning_light_sts.signal
+        
+        if new_value == signal.OFF.value:
+            if context.is_avm360page():
+                context.exit_avm360page()
+                context.turn_light_entered_event.clear()
                 
-            
+
+class OnChangeTurnLightSwitch(AbstractOnChangeStrategy):
+    
+    def execute(self, context, change):
+        
+        BCM.TurnLight().execute(context=context)
+        
+        if not context.is_enabled:
+            return
+
+        new_value = change["new"]
+        signal = context.signal_cluster.turn_light_sw.signal
+        
+        if (new_value == signal.Left_On.value) or (new_value == signal.Right_On.value):
+            if not context.is_avm360page():
+                context.system.display.clear_all_output()
+                context.enter_avm360page()
+                context.turn_light_entered_event.set()
+                
+                
+                
+        
+             
                 
 class OnChangeGearStatus(AbstractOnChangeStrategy):
     
     def execute(self, context, change):
-        if not context.context_enabled:
+        if not context.is_enabled:
             return
         
         new_value = change["new"]
         signal = context.signal_cluster.gear_sts.signal
         
         if new_value == signal.ReverseRange.value:
-            context.system.display.clear_all_output()
-            context.enter_avm360page()
+            if not context.is_avm360page():
+                context.system.display.clear_all_output()
+                context.enter_avm360page()
             
         else:
             if context.is_avm360page():
                 context.exit_avm360page()
+
+
+class OnChangeSpeed(AbstractOnChangeStrategy):
+    
+    def execute(self, context, change):
+
+        context.on_speed_for_enable()
+        
+        if not context.is_enabled:
+            if context.is_avm360page():
+                context.exit_avm360page()
+
+
+class DockEnterStrategy(AbstractStrategy):
+    
+    def execute(self, context):
+       
+        if context.is_enabled:
+            context.system.display.clear_all_output() 
+
+            context.dock_entered_event.set()
+            context.enter_avm360page()
+            
+        else:
+            _logger.warn("Current vehicle speed is not allowed to enter avm360page.")
+            
