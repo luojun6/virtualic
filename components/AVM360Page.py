@@ -13,8 +13,8 @@ class _AVM360Button(widgets.Button):
         self.layout = widgets.Layout(width="auto")
 
 
-class _AVM360SettingPage(widgets.VBox):
-    CLOSESPEED_KEY = 'AVM360CloseSpeed'
+class AVM360SettingPage(widgets.VBox):
+    CLOSESPEED_KEY = 'AVM360AppCloseSpeed'
     CLOSESPEED_15KM = "15km/h"
     CLOSESPEED_25KM = "25km/h"
     CLOSESPEED_35KM = "35km/h"
@@ -44,6 +44,7 @@ class _AVM360SettingPage(widgets.VBox):
         
         
         self.__external_closespeed_setting_callback_list = []
+        
         super().__init__(children=[self.__title,
                                    self.__closespeed_setting,
                                    self.__exit_button], **kwargs)
@@ -67,7 +68,8 @@ class _AVM360SettingPage(widgets.VBox):
         
     @property
     def user_setting_closespeed_value(self):
-        return self.__closespeed_setting_buttons.value        
+        return self.__closespeed_setting_buttons.value    
+    
 
 
 class AVM360Page(widgets.VBox):
@@ -83,7 +85,7 @@ class AVM360Page(widgets.VBox):
         with self.__main_output:
             display(self.__main_page)
 
-        self.__avm360_setting_page = _AVM360SettingPage()
+        self.__avm360_setting_page = AVM360SettingPage()
         self.__setting_event = threading.Event()
 
         super().__init__(

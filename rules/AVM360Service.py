@@ -4,7 +4,7 @@ from common.ipywidgetsUtilities import get_output_model_id
 from components.AVM360Page import AVM360Page
 from components.VirtualSystem import VituralSystemContext
 from components.SignalClusters_AVM360 import SignalClusterAVM360
-from components.PMIC_AVM360 import PowerControlBox_AVM360
+from components.PMIC_AVM360 import PowerControlBox_AVM360, ExtremeEnergySaving_AVM360
 from rules.AbstractStrategies import AbstractOnChangeStrategy, AbstractStrategy
 import rules.FakedBCM as BCM
 
@@ -25,12 +25,17 @@ class AVM360Context(VituralSystemContext):
         
         self.__signal_cluster = SignalClusterAVM360()
         self.__pmic = PowerControlBox_AVM360()
+        self.__ees = ExtremeEnergySaving_AVM360()
         self.__dock_entered = threading.Event()
         self.__turn_light_entered = threading.Event()
+        
+        self.__ees_enabled = self.__ees.applied_checkbox.value
         
         super().__init__()
         
         self.__init_strategies()
+        
+        #TODO: Init EES
         
         
     # Step 1: Configure Concrete Strategy 
@@ -42,6 +47,9 @@ class AVM360Context(VituralSystemContext):
         self.__on_change_turn_light_switch_strategy = OnChangeTurnLightSwitch()
         self.__on_change_left_turn_light_status_strategy = OnChnageLeftTurnLightStatus()
         self.__on_change_right_turn_light_status_strategy = OnChnageRightTurnLightStatus()
+        
+        # Customized callback structure
+        self.__avm360page.avm360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
     
     # Step 2: Define callback function    
     def __on_change_gear_sts(self, change):
@@ -58,6 +66,16 @@ class AVM360Context(VituralSystemContext):
         
     def __on_change_right_turn_light_status(self, change):
         self.__on_change_right_turn_light_status_strategy.execute(context=self, change=change)
+        
+    def __on_change_closespeed_setting_for_ees(self, new_value: str):
+        if self.__ees_enabled:
+            app_close_speed_setting = self.get_closespeed_setting_value()
+            self.__ees.open_speed.value = app_close_speed_setting
+            power_close_speed_setting = self.__ees.POWER_CLOSE_MAP[app_close_speed_setting]
+            self.__ees.close_speed.value = power_close_speed_setting
+            
+  
+            
         
     # Step 3: Register callback functions
     # Executed in parent constructor
@@ -76,7 +94,6 @@ class AVM360Context(VituralSystemContext):
             self.enable()
         else:
             self.disable()
-            
         
     def __exit_avm360page_button_callback(self, button):
         self.exit_avm360page()
@@ -101,6 +118,10 @@ class AVM360Context(VituralSystemContext):
     @property
     def pmic(self):
         return self.__pmic
+    
+    @property
+    def ees(self):
+        return self.__ees
         
     @property
     def signal_cluster(self):

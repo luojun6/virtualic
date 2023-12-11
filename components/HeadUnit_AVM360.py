@@ -18,7 +18,10 @@ class HeadUnit_AVM360(widgets.VBox):
         self.layout = self.ROW_LAYOUT
         super().__init__(
             children=[
-                widgets.HBox(children=[self.__hu.display, self.__hu.avm360context.pmic], layout=self.ROW_LAYOUT), 
+                widgets.HBox(
+                    children=[self.__hu.display, 
+                              widgets.VBox(children=[self.__hu.avm360context.pmic, self.__hu.avm360context.ees])],
+                    layout=self.ROW_LAYOUT), 
                 # self.__veh_hu_pm.signal_cluster
                 ]
         )
