@@ -25,31 +25,28 @@ class AVM360Context(VituralSystemContext):
         
         self.__signal_cluster = SignalClusterAVM360()
         self.__pmic = PowerControlBox_AVM360()
-        self.__ees = ExtremeEnergySaving_AVM360()
+        self.__ees = ExtremeEnergySaving_AVM360(pmic=self.__pmic)
         self.__dock_entered = threading.Event()
         self.__turn_light_entered = threading.Event()
         
-        self.__ees_enabled = self.__ees.applied_checkbox.value
+        # self.__ees_enabled = self.__ees.applied_checkbox.value
         
         super().__init__()
         
         self.__init_strategies()
         
-        #TODO: Init EES
-        
         
     # Step 1: Configure Concrete Strategy 
     def __init_strategies(self):
-        self.on_speed_for_enable()
         self.__on_change_gear_sts_strategy = OnChangeGearStatus()
         self.__on_change_speed_strategy = OnChangeSpeed()
         self.__dock_enter_strategy = DockEnterStrategy()
         self.__on_change_turn_light_switch_strategy = OnChangeTurnLightSwitch()
         self.__on_change_left_turn_light_status_strategy = OnChnageLeftTurnLightStatus()
         self.__on_change_right_turn_light_status_strategy = OnChnageRightTurnLightStatus()
+        self.__ees_strategy = ExtremeEnergySavingStrategy()
         
-        # Customized callback structure
-        self.__avm360page.avm360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
+
     
     # Step 2: Define callback function    
     def __on_change_gear_sts(self, change):
@@ -67,14 +64,9 @@ class AVM360Context(VituralSystemContext):
     def __on_change_right_turn_light_status(self, change):
         self.__on_change_right_turn_light_status_strategy.execute(context=self, change=change)
         
-    def __on_change_closespeed_setting_for_ees(self, new_value: str):
-        if self.__ees_enabled:
-            app_close_speed_setting = self.get_closespeed_setting_value()
-            self.__ees.open_speed.value = app_close_speed_setting
-            power_close_speed_setting = self.__ees.POWER_CLOSE_MAP[app_close_speed_setting]
-            self.__ees.close_speed.value = power_close_speed_setting
-            
-  
+    def __on_change_closespeed_setting_for_ees(self, new_value):
+        # self.__reset_extreme_energy_saving()
+        self.__ees_strategy.execute(context=self)
             
         
     # Step 3: Register callback functions
@@ -87,13 +79,11 @@ class AVM360Context(VituralSystemContext):
         self.__signal_cluster.left_turnning_light_sts.set_on_change_callback(self.__on_change_left_turn_light_status)
         self.__signal_cluster.right_turnning_light_sts.set_on_change_callback(self.__on_change_right_turn_light_status)
         
-    def on_speed_for_enable(self):
-        current_speed = self.get_vehicle_speed()
-        closed_speed_setting = self.get_closespeed_setting_value()
-        if current_speed < closed_speed_setting:
-            self.enable()
-        else:
-            self.disable()
+        # Speicial callback structure
+        if self.__ees.applied_checkbox.value:
+            self.__ees_strategy.execute(context=self)
+            self.__avm360page.avm360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
+            
         
     def __exit_avm360page_button_callback(self, button):
         self.exit_avm360page()
@@ -114,6 +104,9 @@ class AVM360Context(VituralSystemContext):
         self.disable()    
         
     
+    @property
+    def ees(self):
+        return self.__ees
     
     @property
     def pmic(self):
@@ -238,11 +231,22 @@ class OnChangeSpeed(AbstractOnChangeStrategy):
     
     def execute(self, context, change):
 
-        context.on_speed_for_enable()
+        # context.on_speed_for_enable()
+        current_speed = context.get_vehicle_speed()
+        close_speed_setting = context.get_closespeed_setting_value()
+        if current_speed < close_speed_setting:
+            context.enable()
+        else:
+            context.disable()
         
         if not context.is_enabled:
             if context.is_avm360page():
                 context.exit_avm360page()
+                
+        if context.ees.applied_checkbox.value:
+            
+            context.ees.on_change_speed_callback(current_speed=current_speed)
+        
 
 
 class DockEnterStrategy(AbstractStrategy):
@@ -258,3 +262,11 @@ class DockEnterStrategy(AbstractStrategy):
         else:
             _logger.warn("Current vehicle speed is not allowed to enter avm360page.")
             
+            
+class ExtremeEnergySavingStrategy(AbstractStrategy):
+    
+    def execute(self, context):
+        app_close_speed_setting = context.get_closespeed_setting_value()
+        context.ees.open_speed.value = app_close_speed_setting
+        power_close_speed_setting = context.ees.POWER_CLOSE_MAP[app_close_speed_setting]
+        context.ees.close_speed.value = power_close_speed_setting
