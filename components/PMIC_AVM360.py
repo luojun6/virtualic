@@ -1,10 +1,14 @@
 import ipywidgets as widgets
 from components.PMIC import PowerControlBox
+from components.HeadUnit_Internals import SdCardPluginStatus
 from components.UserDB import user_db
 
 _CAMERA_ICON = "camera"
 
 class PowerControlBox_AVM360(widgets.VBox):
+    
+    POWER_ON = "POWER_ON"
+    POWER_OFF = "POWER_OFF"
     
     def __init__(self, title="Virtual Power Module Management - AVM360") -> None:
         # self.__PMIC_status = PowerControlBox.POWER_OFF_STATUS
@@ -24,6 +28,8 @@ class PowerControlBox_AVM360(widgets.VBox):
             ),
             children=[self.__left_cam, self.__PMIC, self.__right_cam]
         )
+        
+        self.__power_status = self.POWER_OFF
         
         self.layout=widgets.Layout(
             display="flex",
@@ -50,6 +56,7 @@ class PowerControlBox_AVM360(widgets.VBox):
         self.__rear_cam.run()
         self.__left_cam.run()
         self.__right_cam.run()
+        self.__power_status = self.POWER_ON
         
     def power_off(self):
         self.__PMIC.power_off()
@@ -58,6 +65,11 @@ class PowerControlBox_AVM360(widgets.VBox):
         self.__rear_cam.power_off()
         self.__left_cam.power_off()
         self.__right_cam.power_off()
+        self.__power_status = self.POWER_OFF
+        
+    @property
+    def power_status(self):
+        return self.__power_status
         
         
 class ExtremeEnergySaving_AVM360(widgets.VBox):
@@ -77,11 +89,13 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
     
     def __init__(self, 
                  pmic: PowerControlBox_AVM360,
+                 sd_card_plugin: SdCardPluginStatus,
                  title="Extreme Energy Saving Setting - AVM360", 
                  close_speed=POWER_CLOSE_SPEED_15KMH, 
                  open_speed=APP_CLOSE_SPEED_15KMH):
         
         self.__pmic = pmic
+        self.__sd_card_plugin = sd_card_plugin
         
         self.__lablel = widgets.HTML(
             f"<h5 style='font-weight:bold'>{title}</h5>")
@@ -94,13 +108,13 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
         )
         self.__close_speed = widgets.IntText(
             value=close_speed,
-            description = "close_speed(km/h)",
+            description = "close_speed",
             disabled=True
             )
         
         self.__open_speed = widgets.IntText(
             value=open_speed,
-            description = "open_speed(km/h)",
+            description = "open_speed",
             disabled=True
         )
         
@@ -127,6 +141,9 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
         user_db.save_userdb(key=self.EES_AVM360_ENABLED_KEY, value=new_value)
         
     def on_change_speed_callback(self, current_speed):
+        
+        if self.__sd_card_plugin.value == self.__sd_card_plugin.SD_CARD_PLUG_IN:
+            return 
         
         if current_speed > int(self.__close_speed.value):
             self.__pmic.power_off()

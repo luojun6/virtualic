@@ -6,6 +6,7 @@ from components.VirtualSystem import VituralSystemContext
 from components.SignalClusters_AVM360 import SignalClusterAVM360
 from components.PMIC_AVM360 import PowerControlBox_AVM360, ExtremeEnergySaving_AVM360
 from rules.AbstractStrategies import AbstractOnChangeStrategy, AbstractStrategy
+import components.HeadUnit_Internals as hu_internals
 import rules.FakedBCM as BCM
 
 from utils.loggers import Logger, logging_handler
@@ -25,7 +26,8 @@ class AVM360Context(VituralSystemContext):
         
         self.__signal_cluster = SignalClusterAVM360()
         self.__pmic = PowerControlBox_AVM360()
-        self.__ees = ExtremeEnergySaving_AVM360(pmic=self.__pmic)
+        self.__sd_card_plugin = hu_internals.SdCardPluginStatus()
+        self.__ees = ExtremeEnergySaving_AVM360(pmic=self.__pmic, sd_card_plugin=self.__sd_card_plugin)
         self.__dock_entered = threading.Event()
         self.__turn_light_entered = threading.Event()
         
@@ -45,7 +47,7 @@ class AVM360Context(VituralSystemContext):
         self.__on_change_left_turn_light_status_strategy = OnChnageLeftTurnLightStatus()
         self.__on_change_right_turn_light_status_strategy = OnChnageRightTurnLightStatus()
         self.__ees_strategy = ExtremeEnergySavingStrategy()
-        
+        self.__on_change_sd_card_plugin_strategy = OnChangeSDCardPlugin()
 
     
     # Step 2: Define callback function    
@@ -68,6 +70,8 @@ class AVM360Context(VituralSystemContext):
         # self.__reset_extreme_energy_saving()
         self.__ees_strategy.execute(context=self)
             
+    def __on_change_sd_card_plugin_status(self, change):
+        self.__on_change_sd_card_plugin_strategy.execute(context=self, change=change)
         
     # Step 3: Register callback functions
     # Executed in parent constructor
@@ -83,6 +87,8 @@ class AVM360Context(VituralSystemContext):
         if self.__ees.applied_checkbox.value:
             self.__ees_strategy.execute(context=self)
             self.__avm360page.avm360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
+            
+        self.__sd_card_plugin.observe(self.__on_change_sd_card_plugin_status)
             
         
     def __exit_avm360page_button_callback(self, button):
@@ -103,6 +109,9 @@ class AVM360Context(VituralSystemContext):
         self.__pmic.power_off()
         self.disable()    
         
+    @property
+    def sd_card_plugin(self):
+        return self.__sd_card_plugin
     
     @property
     def ees(self):
@@ -202,10 +211,6 @@ class OnChangeTurnLightSwitch(AbstractOnChangeStrategy):
                 context.system.display.clear_all_output()
                 context.enter_avm360page()
                 context.turn_light_entered_event.set()
-                
-                
-                
-        
              
                 
 class OnChangeGearStatus(AbstractOnChangeStrategy):
@@ -266,7 +271,25 @@ class DockEnterStrategy(AbstractStrategy):
 class ExtremeEnergySavingStrategy(AbstractStrategy):
     
     def execute(self, context):
-        app_close_speed_setting = context.get_closespeed_setting_value()
-        context.ees.open_speed.value = app_close_speed_setting
-        power_close_speed_setting = context.ees.POWER_CLOSE_MAP[app_close_speed_setting]
-        context.ees.close_speed.value = power_close_speed_setting
+        
+        if context.sd_card_plugin.value == context.sd_card_plugin.SD_CARD_NOT_PLUG_IN:
+        
+            app_close_speed_setting = context.get_closespeed_setting_value()
+            context.ees.open_speed.value = app_close_speed_setting
+            power_close_speed_setting = context.ees.POWER_CLOSE_MAP[app_close_speed_setting]
+            context.ees.close_speed.value = power_close_speed_setting
+
+
+class OnChangeSDCardPlugin(AbstractOnChangeStrategy):
+    
+    def execute(self, context, change):
+        
+        # if not context.is_enabled:
+        #     return
+        
+        new_value = change["new"]
+        _logger.debug(f"Recevied new SD Card plug-in status: {new_value}")
+        _logger.debug(f"AVM Camera PMIC status: {context.pmic.power_status}")
+        if (new_value == context.sd_card_plugin.SD_CARD_PLUG_IN) & (context.pmic.power_status == context.pmic.POWER_OFF):
+            context.pmic.power_on()
+        
