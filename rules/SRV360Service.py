@@ -1,10 +1,10 @@
 import threading
 from IPython.core.display import display
 from common.ipywidgetsUtilities import get_output_model_id
-from components.AVM360Page import AVM360Page
+from components.SRV60Page import SRV360Page
 from components.VirtualSystem import VituralSystemContext
-from components.SignalClusters_AVM360 import SignalClusterAVM360
-from components.PMIC_AVM360 import PowerControlBox_AVM360, ExtremeEnergySaving_AVM360
+from components.SignalClusters_SRV360 import SignalClusterSRV360
+from components.PMIC_SRV360 import PowerControlBox_SRV360, ExtremeEnergySaving_SRV360
 from rules.AbstractStrategies import AbstractOnChangeStrategy, AbstractStrategy
 import components.HeadUnit_Internals as hu_internals
 import rules.FakedBCM as BCM
@@ -17,17 +17,17 @@ _logger = Logger(logger_name=__file__,
                  logging_level=logging.DEBUG)
     
     
-class AVM360Context(VituralSystemContext):
+class SRV360Context(VituralSystemContext):
     
     # def __init__(self, headunit: VirtualHeadUnit):
     def __init__(self):
         # self.__display = self.system.display
-        self.__avm360page = AVM360Page()
+        self.__srv360page = SRV360Page()
         
-        self.__signal_cluster = SignalClusterAVM360()
-        self.__pmic = PowerControlBox_AVM360()
+        self.__signal_cluster = SignalClusterSRV360()
+        self.__pmic = PowerControlBox_SRV360()
         self.__sd_card_plugin = hu_internals.SdCardPluginStatus()
-        self.__ees = ExtremeEnergySaving_AVM360(pmic=self.__pmic, sd_card_plugin=self.__sd_card_plugin)
+        self.__ees = ExtremeEnergySaving_SRV360(pmic=self.__pmic, sd_card_plugin=self.__sd_card_plugin)
         self.__dock_entered = threading.Event()
         self.__turn_light_entered = threading.Event()
         
@@ -76,7 +76,7 @@ class AVM360Context(VituralSystemContext):
     # Step 3: Register callback functions
     # Executed in parent constructor
     def register_callbacks(self):
-        self.__avm360page.home_button.on_click(self.__exit_avm360page_button_callback)
+        self.__srv360page.home_button.on_click(self.__exit_srv360page_button_callback)
         self.__signal_cluster.gear_sts.set_on_change_callback(self.__on_change_gear_sts)
         self.__signal_cluster.vehicle_speed.set_on_change_callback(self.__on_change_speed)
         self.__signal_cluster.turn_light_sw.set_on_change_callback(self.__on_change_turn_light_switch)
@@ -86,20 +86,20 @@ class AVM360Context(VituralSystemContext):
         # Speicial callback structure
         if self.__ees.applied_checkbox.value:
             self.__ees_strategy.execute(context=self)
-            self.__avm360page.avm360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
+            self.__srv360page.srv360_setting_page.append_closespeed_setting_callback(self.__on_change_closespeed_setting_for_ees)
             
         self.__sd_card_plugin.observe(self.__on_change_sd_card_plugin_status)
             
         
-    def __exit_avm360page_button_callback(self, button):
-        self.exit_avm360page()
+    def __exit_srv360page_button_callback(self, button):
+        self.exit_srv360page()
         
-    def exit_avm360page(self):
-        self.avm360page.exit_setting_page()
+    def exit_srv360page(self):
+        self.srv360page.exit_setting_page()
         self.system.dock_context.enter_home_page()
         self.__turn_light_entered.clear()
         self.__dock_entered.clear()
-        self.avm360page.clear_setting()
+        self.srv360page.clear_setting()
         
     def power_on(self):
         self.__pmic.power_on()
@@ -130,8 +130,8 @@ class AVM360Context(VituralSystemContext):
         return self.__signal_cluster
         
     @property
-    def avm360page(self):
-        return self.__avm360page    
+    def srv360page(self):
+        return self.__srv360page    
     
     def dock_enter(self):
         self.__dock_enter_strategy.execute(context=self)
@@ -144,21 +144,21 @@ class AVM360Context(VituralSystemContext):
     def turn_light_entered_event(self):
         return self.__turn_light_entered
         
-    def is_avm360page(self):
-        return get_output_model_id(self.system.display.foreground) == self.__avm360page.model_id
+    def is_srv360page(self):
+        return get_output_model_id(self.system.display.foreground) == self.__srv360page.model_id
     
-    def enter_avm360page(self):
-        _logger.debug("Entered avm360page.")
-        if not self.is_avm360page():
+    def enter_srv360page(self):
+        _logger.debug("Entered srv360page.")
+        if not self.is_srv360page():
         
             with self.system.display.foreground:
-                display(self.__avm360page)
+                display(self.__srv360page)
                 
         else:
-            _logger.error("Already in avm360page!")
+            _logger.error("Already in srv360page!")
             
     def get_closespeed_setting_value(self):
-        return int(self.avm360page.avm360_setting_page.user_setting_closespeed_value.replace("km/h", ""))
+        return int(self.srv360page.srv360_setting_page.user_setting_closespeed_value.replace("km/h", ""))
 
     def get_vehicle_speed(self):
         return int(self.signal_cluster.vehicle_speed.value)
@@ -174,8 +174,8 @@ class OnChnageRightTurnLightStatus(AbstractOnChangeStrategy):
         signal = context.signal_cluster.right_turnning_light_sts.signal
         
         if new_value == signal.OFF.value:
-            if context.is_avm360page():
-                context.exit_avm360page()
+            if context.is_srv360page():
+                context.exit_srv360page()
                 context.turn_light_entered_event.clear()
     
     
@@ -189,8 +189,8 @@ class OnChnageLeftTurnLightStatus(AbstractOnChangeStrategy):
         signal = context.signal_cluster.left_turnning_light_sts.signal
         
         if new_value == signal.OFF.value:
-            if context.is_avm360page():
-                context.exit_avm360page()
+            if context.is_srv360page():
+                context.exit_srv360page()
                 context.turn_light_entered_event.clear()
                 
 
@@ -207,9 +207,9 @@ class OnChangeTurnLightSwitch(AbstractOnChangeStrategy):
         signal = context.signal_cluster.turn_light_sw.signal
         
         if (new_value == signal.Left_On.value) or (new_value == signal.Right_On.value):
-            if not context.is_avm360page():
+            if not context.is_srv360page():
                 context.system.display.clear_all_output()
-                context.enter_avm360page()
+                context.enter_srv360page()
                 context.turn_light_entered_event.set()
              
                 
@@ -223,13 +223,13 @@ class OnChangeGearStatus(AbstractOnChangeStrategy):
         signal = context.signal_cluster.gear_sts.signal
         
         if new_value == signal.ReverseRange.value:
-            if not context.is_avm360page():
+            if not context.is_srv360page():
                 context.system.display.clear_all_output()
-                context.enter_avm360page()
+                context.enter_srv360page()
             
         else:
-            if context.is_avm360page():
-                context.exit_avm360page()
+            if context.is_srv360page():
+                context.exit_srv360page()
 
 
 class OnChangeSpeed(AbstractOnChangeStrategy):
@@ -245,8 +245,8 @@ class OnChangeSpeed(AbstractOnChangeStrategy):
             context.disable()
         
         if not context.is_enabled:
-            if context.is_avm360page():
-                context.exit_avm360page()
+            if context.is_srv360page():
+                context.exit_srv360page()
                 
         if context.ees.applied_checkbox.value:
             
@@ -262,10 +262,10 @@ class DockEnterStrategy(AbstractStrategy):
             context.system.display.clear_all_output() 
 
             context.dock_entered_event.set()
-            context.enter_avm360page()
+            context.enter_srv360page()
             
         else:
-            _logger.warn("Current vehicle speed is not allowed to enter avm360page.")
+            _logger.warn("Current vehicle speed is not allowed to enter srv360page.")
             
             
 class ExtremeEnergySavingStrategy(AbstractStrategy):

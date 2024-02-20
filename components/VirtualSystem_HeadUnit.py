@@ -6,9 +6,8 @@ from components.DisplayPanel import DisplayPanel
 from components.VirtualSystem import VirtualSystem
 from rules.VehicleHeadUnitPM import VehicleHeadUnitPM_SAIC
 from rules.DockEvents import DockContext
-from rules.AVM360Service import AVM360Context
-# import rules.DockEvents as dock
-# import rules.AVM360Service as avm360
+from rules.SRV360Service import SRV360Context
+
 
 from utils.loggers import Logger, logging_handler
 import logging
@@ -30,7 +29,7 @@ class VirtualSystem_HeadUnit(VirtualSystem):
         self.__display = display
         self.__veh_hu_pm = veh_hu_pm
         self.__dock_context = DockContext()
-        self.__avm360context = AVM360Context()
+        self.__srv360context = SRV360Context()
         
         self.__conext_list = list()
         self.__start_context()
@@ -56,7 +55,7 @@ class VirtualSystem_HeadUnit(VirtualSystem):
     def __start_context(self):
         
         self.__conext_list.append(self.__dock_context)
-        self.__conext_list.append(self.__avm360context)
+        self.__conext_list.append(self.__srv360context)
         
         for context in self.__conext_list:
             context.system = self   
@@ -81,7 +80,7 @@ class VirtualSystem_HeadUnit(VirtualSystem):
         return self.__dock_context
     
     @property
-    def avm360context(self):
-        return self.__avm360context    
+    def srv360context(self):
+        return self.__srv360context    
 
 

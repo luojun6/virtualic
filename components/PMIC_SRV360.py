@@ -5,12 +5,12 @@ from components.UserDB import user_db
 
 _CAMERA_ICON = "camera"
 
-class PowerControlBox_AVM360(widgets.VBox):
+class PowerControlBox_SRV360(widgets.VBox):
     
     POWER_ON = "POWER_ON"
     POWER_OFF = "POWER_OFF"
     
-    def __init__(self, title="Virtual Power Module Management - AVM360") -> None:
+    def __init__(self, title="Virtual Power Module Management - SRV360") -> None:
         # self.__PMIC_status = PowerControlBox.POWER_OFF_STATUS
         self.__lablel = widgets.HTML(
             f"<h5 style='font-weight:bold'>{title}</h5>")
@@ -72,8 +72,8 @@ class PowerControlBox_AVM360(widgets.VBox):
         return self.__power_status
         
         
-class ExtremeEnergySaving_AVM360(widgets.VBox):
-    EES_AVM360_ENABLED_KEY = "ExtremeEnergySavingAVM360Enabled"
+class ExtremeEnergySaving_SRV360(widgets.VBox):
+    EES_SRV360_ENABLED_KEY = "ExtremeEnergySavingSRV360Enabled"
     APP_CLOSE_SPEED_15KMH = 15
     APP_CLOSE_SPEED_25KMH = 25
     APP_CLOSE_SPEED_35KMH = 35
@@ -88,9 +88,9 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
     }
     
     def __init__(self, 
-                 pmic: PowerControlBox_AVM360,
+                 pmic: PowerControlBox_SRV360,
                  sd_card_plugin: SdCardPluginStatus,
-                 title="Extreme Energy Saving Setting - AVM360", 
+                 title="Extreme Energy Saving Setting - SRV360", 
                  close_speed=POWER_CLOSE_SPEED_15KMH, 
                  open_speed=APP_CLOSE_SPEED_15KMH):
         
@@ -99,11 +99,11 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
         
         self.__lablel = widgets.HTML(
             f"<h5 style='font-weight:bold'>{title}</h5>")
-        __applied_checkbox = user_db.get_user_setting(self.EES_AVM360_ENABLED_KEY)
+        __applied_checkbox = user_db.get_user_setting(self.EES_SRV360_ENABLED_KEY)
         self.__applied_checkbox = widgets.Checkbox(
             value=__applied_checkbox,
             description="Applied?",
-            tooltip = "Applied Extreme Energy Saving for AVM360?",
+            tooltip = "Applied Extreme Energy Saving for SRV360?",
             button_style = "info",
         )
         self.__close_speed = widgets.IntText(
@@ -138,7 +138,7 @@ class ExtremeEnergySaving_AVM360(widgets.VBox):
         
     def __on_change_applied_checkbox(self, change):
         new_value = change["new"]
-        user_db.save_userdb(key=self.EES_AVM360_ENABLED_KEY, value=new_value)
+        user_db.save_userdb(key=self.EES_SRV360_ENABLED_KEY, value=new_value)
         
     def on_change_speed_callback(self, current_speed):
         

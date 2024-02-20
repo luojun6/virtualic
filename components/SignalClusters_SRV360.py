@@ -5,7 +5,7 @@ import signals.saic_signals as signals
 
 from components.SignalClusters import SignalCluster
 
-class SignalClusterAVM360(SignalCluster):
+class SignalClusterSRV360(SignalCluster):
     def __init__(self,
                  gear_sts_class=signals.TrShftLvrPos,
                  turn_light_sw_class=signals.DircnIndLampSwSts,
@@ -40,7 +40,7 @@ class SignalClusterAVM360(SignalCluster):
         )
         
         super().__init__(
-            title="AVM360 Signals Cluster", 
+            title="SRV360 Signals Cluster", 
             signal_box=widgets.VBox([
                 first_row, second_row, third_row
             ]))

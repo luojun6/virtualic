@@ -7,7 +7,7 @@ from rules.HeadUnitPM import PowerManagementDisplay as HeadUnitPM
 from rules.VehicleHeadUnitPM import VehicleHeadUnitPM_SAIC
 
 
-class HeadUnit_AVM360(widgets.VBox):
+class HeadUnit_SRV360(widgets.VBox):
     ROW_LAYOUT = widgets.Layout(justify_content="space-around")
     def __init__(self):
         self.__display = DisplayPanel()
@@ -20,7 +20,7 @@ class HeadUnit_AVM360(widgets.VBox):
             children=[
                 widgets.HBox(
                     children=[self.__hu.display, 
-                              widgets.VBox(children=[self.__hu.avm360context.pmic, self.__hu.avm360context.ees])],
+                              widgets.VBox(children=[self.__hu.srv360context.pmic, self.__hu.srv360context.ees])],
                     layout=self.ROW_LAYOUT), 
                 # self.__veh_hu_pm.signal_cluster
                 ]

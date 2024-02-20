@@ -5,7 +5,7 @@ from components.UserDB import user_db
 from IPython.core.display import display
 
 
-class _AVM360Button(widgets.Button):
+class _SRV360Button(widgets.Button):
     def __init__(self, icon: str, button_style="danger", **kwargs):
         super().__init__(**kwargs)
         self.icon = icon
@@ -13,13 +13,13 @@ class _AVM360Button(widgets.Button):
         self.layout = widgets.Layout(width="auto")
 
 
-class AVM360SettingPage(widgets.VBox):
-    CLOSESPEED_KEY = 'AVM360AppCloseSpeed'
+class SRV360SettingPage(widgets.VBox):
+    CLOSESPEED_KEY = 'SRV360AppCloseSpeed'
     CLOSESPEED_15KM = "15km/h"
     CLOSESPEED_25KM = "25km/h"
     CLOSESPEED_35KM = "35km/h"
 
-    def __init__(self, title="AVM360 Setting", **kwargs):
+    def __init__(self, title="SRV360 Setting", **kwargs):
 
         self.__title = widgets.HTML(
             f"<h4 style='font-weight:bold; color:white'>{title}</h4>")
@@ -72,32 +72,32 @@ class AVM360SettingPage(widgets.VBox):
     
 
 
-class AVM360Page(widgets.VBox):
+class SRV360Page(widgets.VBox):
 
     def __init__(self, **kwargs):
         self.__main_output = widgets.Output()
-        self.__main_page = pages.AVM360_PAGE_0
-        self.__home_button = _AVM360Button(icon="home")
-        self.__setting_button = _AVM360Button(icon="gear")
+        self.__main_page = pages.SRV360_PAGE_0
+        self.__home_button = _SRV360Button(icon="home")
+        self.__setting_button = _SRV360Button(icon="gear")
         self.__buttons_box = widgets.HBox(
             [self.__home_button, self.__setting_button])
 
         with self.__main_output:
             display(self.__main_page)
 
-        self.__avm360_setting_page = AVM360SettingPage()
+        self.__srv360_setting_page = SRV360SettingPage()
         self.__setting_event = threading.Event()
 
         super().__init__(
             children=[self.__buttons_box, self.__main_output], **kwargs)
 
         self.__setting_button.on_click(self.__on_click_setting_button)
-        self.__avm360_setting_page.exit_setting_button.on_click(self.__on_click_exit_setting_button)
+        self.__srv360_setting_page.exit_setting_button.on_click(self.__on_click_exit_setting_button)
         
 
     @property
-    def avm360_setting_page(self):
-        return self.__avm360_setting_page
+    def srv360_setting_page(self):
+        return self.__srv360_setting_page
     
     @property
     def home_button(self):
@@ -130,7 +130,6 @@ class AVM360Page(widgets.VBox):
             self.__setting_event.set()
             self.__main_output.clear_output()
             with self.__main_output:
-                display(self.__avm360_setting_page)    
+                display(self.__srv360_setting_page)    
                 
                 
-# avm360page = AVM360Page()
