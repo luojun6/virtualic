@@ -19,7 +19,7 @@ class DockButtons(widgets.VBox):
         self.__radio_button.description = "𝗥"
         self.__setting_button = DockButton(icon="gear")
         self.__car_button = DockButton(icon="car")
-        self.__avm360_button = DockButton(icon="camera")
+        self.__srv360_button = DockButton(icon="camera")
         self.__bars_button = DockButton(icon="bars")
 
         self.layout = widgets.Layout(padding="3px")
@@ -31,7 +31,7 @@ class DockButtons(widgets.VBox):
                 self.__radio_button,
                 self.__setting_button,
                 self.__car_button,
-                self.__avm360_button,
+                self.__srv360_button,
                 self.__bars_button
             ],
             **kwargs)
@@ -53,8 +53,8 @@ class DockButtons(widgets.VBox):
         return self.__car_button
 
     @property
-    def avm360_button(self):
-        return self.__avm360_button
+    def srv360_button(self):
+        return self.__srv360_button
 
     @property
     def bars_button(self):

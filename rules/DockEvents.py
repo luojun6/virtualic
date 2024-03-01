@@ -20,20 +20,20 @@ class DockContext(VituralSystemContext):
     # Step 1: Configure Concrete Strategy 
     def __init_strategies(self):
         self.__home_button_strategy = OnClickHomeButton()
-        self.__avm360_button_strategy = OnClickAvm360Button()
+        self.__srv360_button_strategy = OnClickSrv360Button()
     
     # Step 2: Define callback function        
     def __on_click_home_button(self, button):
         self.__home_button_strategy.execute(context=self, button=button)
         
-    def __on_click_avm360_button(self, button):
-        self.__avm360_button_strategy.execute(context=self, button=button)
+    def __on_click_srv360_button(self, button):
+        self.__srv360_button_strategy.execute(context=self, button=button)
     
     # Step 3: Register callback functions
     # Executed in parent constructor
     def register_callbacks(self):
         self.system.display.dock_buttons.home_button.on_click(self.__on_click_home_button)
-        self.system.display.dock_buttons.avm360_button.on_click(self.__on_click_avm360_button)
+        self.system.display.dock_buttons.srv360_button.on_click(self.__on_click_srv360_button)
         
     def clear_display_outputs(self):
         self.system.display.clear_all_output()    
@@ -59,10 +59,10 @@ class OnClickHomeButton(AbstractOnClickStrategy):
         # with context.system.display.dock:
         #     display(context.system.display.dock_buttons)
     
-class OnClickAvm360Button(AbstractOnClickStrategy):
+class OnClickSrv360Button(AbstractOnClickStrategy):
     
     def execute(self, context, button):
-        context.system.avm360context.dock_enter()
+        context.system.srv360context.dock_enter()
 
 
 class OldDockContext(VituralSystemContext):
@@ -75,10 +75,10 @@ class OldDockContext(VituralSystemContext):
     def register_callbacks(self):
         self.system.display.dock_buttons.home_button.on_click(
             self.__on_click_home_button)
-        self.system.display.dock_buttons.avm360_button.on_click(
-            self.__on_click_avm360_button)
+        self.system.display.dock_buttons.srv360_button.on_click(
+            self.__on_click_srv360_button)
         
-        # self.system.avm360context.avm360page.home_button.on_click(self.__on_click_home_button)
+       
         
 
     @property
@@ -104,8 +104,8 @@ class OldDockContext(VituralSystemContext):
     def __on_click_home_button(self, button):
         self.enter_home_page()
 
-    def __on_click_avm360_button(self, button):
-        self.__strategy = DockStrategyAVM360button()
+    def __on_click_srv360_button(self, button):
+        self.__strategy = DockStrategySRV360button()
         self.process_button_pressed_event()
 
 
@@ -124,20 +124,13 @@ class DockStrategyHomeButton(_DockStrategy):
 
         with context.system.display.dock:
             display(context.system.display.dock_buttons)
-        
-        # context.system.avm360context.dock_entered.clear()
-        # context.system.avm360context.on_avm360page.clear()
+    
 
 
-class DockStrategyAVM360button(_DockStrategy):
+class DockStrategySRV360button(_DockStrategy):
 
     def process_button_pressed_event(self, context):
-        context.system.avm360context.dock_entered()
-        # with context.system.display.foreground:
-        #     context.system.avm360context.dock_entered()
-        #     display(context.system.avm360context.avm360page)
-        
-        # context.append_display_events(context.system.avm360context.dock_entered.set())
-        # context.append_display_events(context.system.avm360context.on_avm360page.set())
+        context.system.srv360context.dock_entered()
+
         
             
