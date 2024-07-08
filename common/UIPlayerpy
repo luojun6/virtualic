@@ -1,0 +1,24 @@
+import ipywidgets as widgets
+
+class UIPlayer(widgets.HBox):
+    def __init__(self, 
+                 value=0, 
+                 min=0, 
+                 max=60,
+                 step=1, 
+                 interval=1000,
+                 children=..., **kwargs):
+        
+
+        self.__play = widgets.Play(
+            value=value,
+            min=min,
+            max=max,
+            step=step,
+            interval=interval,
+            description="Press activate timer",
+            disabled=False
+        )
+        self.__slider = widgets.IntSlider()
+        widgets.jslink((self.__play, 'value'), (self.__slider, 'value'))
+        super().__init__(children=[self.__play, self.__slider], **kwargs)

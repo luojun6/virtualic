@@ -36,7 +36,7 @@ class PowerControlBox_SRV360(widgets.VBox):
             flex_flow="column",
             align_items="center",
             border='solid',
-            height="55%"
+            height="60%"
         )
         super().__init__(
             children=[
@@ -80,6 +80,7 @@ class ExtremeEnergySaving_SRV360(widgets.VBox):
     POWER_CLOSE_SPEED_15KMH = 50
     POWER_CLOSE_SPEED_25KMH = 60
     POWER_CLOSE_SPEED_35KMH = 70
+    POWER_ON_SPEED_OFFSET = 4
     
     POWER_CLOSE_MAP = {
         APP_CLOSE_SPEED_15KMH: POWER_CLOSE_SPEED_15KMH,
@@ -123,12 +124,12 @@ class ExtremeEnergySaving_SRV360(widgets.VBox):
             flex_flow="column",
             align_items="center",
             border='solid',
-            height="45%"
+            height="40%"
         )
         super().__init__(
             children=[
                 self.__lablel,
-                self.__applied_checkbox,
+                # self.__applied_checkbox,
                 self.__close_speed,
                 self.__open_speed
             ]
@@ -148,7 +149,7 @@ class ExtremeEnergySaving_SRV360(widgets.VBox):
         if current_speed > int(self.__close_speed.value):
             self.__pmic.power_off()
             
-        elif current_speed < int(self.__open_speed.value):
+        elif current_speed < int(self.__open_speed.value + self.POWER_ON_SPEED_OFFSET):
             self.__pmic.power_on()
         
     @property
